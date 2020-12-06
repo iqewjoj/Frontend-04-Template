@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>五子棋</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 50px;
+        }
+
+        .container {
+            overflow: hidden;
+            width: 750px;
+            height: 750px;
+            background: #a9a9a9;
+            border-radius: 5px;
+        }
+
+        .cell {
+            width: 50px;
+            height: 50px;
+            float: left;
+            position: relative;
+        }
+
+        .cell::before {
+            content: '';
+            display: inline-block;
+            width: 1px;
+            height: 50px;
+            background: #423c3c;
+            position: absolute;
+            top: 0;
+            left: 25px;
+        }
+
+        .cell::after {
+            content: '';
+            display: inline-block;
+            width: 50px;
+            height: 1px;
+            background: #423c3c;
+            position: absolute;
+            top: 25px;
+            left: 0;
+        }
+
+        .white,
+        .black {
+            width: 25px;
+            height: 25px;
+            border-radius: 25px;
+            display: inline-block;
+            top: 12px;
+            left: 12px;
+            position: absolute;
+            z-index: 999;
+        }
+
+        .white {
+            background: #ffffff;
+            box-shadow: 0px 0px 10px #cccccc inset;
+        }
+
+        .black {
+            background: #000000;
+            box-shadow: 0px 0px 10px #504f4f inset;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container" id="container"></div>
+    <script>
+        const pattern = [
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        ]
+
+        let color = 1 // 1是黑棋先下，2是白棋后下
+
+        function show() {
+            const container = document.getElementById('container')
+
+            container.innerHTML = ''
+
+            for (let i = 0; i < pattern.length; i++) {
+                const cell = document.createElement('div')
+                const circle = document.createElement('span')
+                cell.classList.add('cell')
+
+                container.appendChild(cell)
+
+                if (pattern[i] === 1) {
+                    circle.classList.add('black')
+                    cell.appendChild(circle)
+                } else if (pattern[i] === 2) {
+                    circle.classList.add('white')
+                    cell.appendChild(circle)
+                } else {
+                    cell.addEventListener('click', () => userClick(i))
+                }
+                if ((i + 1) % 15 === 0) {
+                    container.appendChild(document.createElement('br'))
+                }
+            }
+        }
+        /**
+         * 点击后重新创建棋盘
+         * 然后程序下，假装程序思考了一秒
+         */
+        function userClick(i) {
+            color = 3 - color
+            pattern[i] = color
+            if (check(pattern, color)) {
+                alert(color === 2 ? '白棋是赢家!' : '黑棋是赢家!')
+                return
+            }
+            show()
+            setTimeout(() => {
+                // computerMove()
+            }, 1000);
+        }
+        function computerMove() {
+            const choice = bestChoice()
+            console.log(choice)
+            if (choice.point !== null) {
+                pattern[choice.point] = color
+            }
+            if (check(pattern, color)) {
+                alert(color === 2 ? '白棋是赢家!' : '黑棋是赢家!')
+                return
+            }
+            color = 3 - color
+            show()
+        }
+        /**
+         * 根据接下来一步，预估谁会赢
+         */
+        function willWin() {
+            for (let i = 0; i < pattern.length; i++) {
+                if (pattern[i]) {
+                    continue
+                }
+                let tmp = clone(pattern)
+                tmp[i] = color
+                if (check(tmp, color)) {
+                    return i // 返回要赢的坐标
+                }
+            }
+            return null
+        }
+        function clone(data) {
+            return Object.create(data)
+        }
+        function bestChoice() {
+            let point = willWin()
+            if (point !== null) {
+                return {
+                    point,
+                    result: 1
+                }
+            }
+            let result = -2
+            for (let i = 0; i < pattern.length; i++) {
+                if (pattern[i]) {
+                    continue
+                }
+                let tmp = clone(pattern)
+                tmp[i] = color
+                let opt = bestChoice(tmp, 3 - color)
+                if (-opt.result > result) {
+                    result = -opt.result
+                    point = i
+                }
+                if (result === 1) {
+                    break
+                }
+            }
+            return {
+                point,
+                result: point ? result : 0
+            }
+        }
+        /**
+         * 判断胜负
+         */
+        function check(pattern, color) {
+            /**
+             * 校验横着是否有5个
+             */
+            for (let k = 0; k < 10; k++) {
+                let win = false
+                for (let i = 0; i < 10; i++) {
+                    let sWin = true
+                    for (let ii = 0; ii < 5; ii++) {
+                        if (pattern[k * 15 + i + ii] !== color) {
+                            sWin = false
+                        }
+                    }
+                    if (sWin) {
+                        win = true
+                    }
+                }
+                if (win) {
+                    return true
+                }
+            }
+            /**
+             * 校验竖着是否有5个【0，15，30，45，60】【15，30，45，60，75】
+             */
+            for (let k = 0; k < 10; k++) {
+                let win = false
+                for (let i = 0; i < 10; i++) {
+                    let sWin = true
+                    for (let ii = 0; ii < 5; ii++) {
+                        if (pattern[k + i * 15 + ii * 15] !== color) {
+                            sWin = false
+                        }
+                    }
+                    if (sWin) {
+                        win = true
+                    }
+                }
+                if (win) {
+                    return true
+                }
+            }
+            /*
+             * 校验右斜边是否有5个【0，16，32，48，64】【15，31，47】
+             */
+            for (let k = 0; k < 10; k++) {
+                let win = false
+                for (let i = 0; i < 10; i++) {
+                    let sWin = true
+                    for (let ii = 0; ii < 5; ii++) {
+                        if (pattern[k * 15 + i + ii * 15 + ii] !== color) {
+                            sWin = false
+                        }
+                    }
+                    if (sWin) {
+                        win = true
+                    }
+                }
+                if (win) {
+                    return true
+                }
+            }
+            /*
+             * 校左斜边是否有5个
+             *【4，18，32，46，60】
+             *【5，19，33，47，61】
+             *【8，20，34，48，62】
+             *【19，33，47，61，75】
+             *【34，48，62，76，90】
+             */
+            for (let k = 0; k < 10; k++) {
+                let win = false
+                for (let i = 0; i < 10; i++) {
+                    let sWin = true
+                    for (let ii = 0; ii < 5; ii++) {
+                        if (pattern[k * 15 + i + ii * 15 + (4 - ii)] !== color) {
+                            sWin = false
+                        }
+                    }
+                    if (sWin) {
+                        win = true
+                    }
+                }
+                if (win) {
+                    return true
+                }
+            }
+            return false
+        }
+        /*
+         * 首次创建棋盘
+         */
+        show()
+    </script>
+</body>
+
+</html>

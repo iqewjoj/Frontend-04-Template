@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>lesson_01</title>
+    <style>
+        .cell {
+            width: 100px;
+            height: 100px;
+            background-color: greenyellow;
+            display: inline-block;
+            vertical-align: middle;
+            line-height: 100px;
+            font-size: 50px;
+            text-align: center;
+            border: 1px solid #ffffff;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="board"></div>
+    <h1 id="tips"></h1>
+    <script>
+        let pattern = [
+            [0, 2, 0],
+            [0, 1, 0],
+            [0, 0, 0]
+        ]
+        let color = 1 // 1为圈，2为叉
+        /**
+         * 创建九宫格
+         */
+        function show(pattern) {
+            let board = document.getElementById('board')
+
+            board.innerHTML = ''
+
+            for (let i = 0; i < pattern.length; i++) {
+                for (let j = 0; j < pattern[i].length; j++) {
+                    let cell = document.createElement('div')
+                    cell.classList.add('cell')
+                    cell.innerText = pattern[i][j] === 2 ? '❌' :
+                        pattern[i][j] === 1 ? '⭕️' : ''
+                    cell.addEventListener('click', () => move(j, i))
+                    board.appendChild(cell)
+                }
+                board.appendChild(document.createElement('br'))
+            }
+        }
+        /**
+         * 单元格的点击事件
+         * 先判断是否已经点过，点过提示不能更改
+         * 然后赋值
+         * 再校验是否胜利
+         * 没有分出谁胜利，重新创建九宫格，且预判谁会赢
+         */
+        function move(j, i) {
+            if (pattern[i][j]) {
+                return
+            }
+            pattern[i][j] = color
+            if (check(pattern, color)) {
+                document.getElementById('tips').innerText = color === 2 ? '❌ 是赢家!' : '⭕️ 是赢家!'
+                return
+            }
+            color = 3 - color
+            show(pattern)
+            if (willWin(pattern, color)) {
+                document.getElementById('tips').innerText = color === 2 ? '❌ 会赢!' : '⭕️ 会赢!'
+            }
+        }
+        /**
+         * 根据接下来一步，预估谁会赢
+         */
+        function willWin(pattern, color) {
+            for (let i = 0; i < pattern.length; i++) {
+                for (let j = 0; j < pattern[i].length; j++) {
+                    if (pattern[i][j]) {
+                        continue
+                    }
+                    let tmp = clone(pattern)
+                    tmp[i][j] = color
+                    if (check(tmp, color)) {
+                        return [j, i] // 返回要赢的坐标
+                    }
+                }
+            }
+            return null
+        }
+        /**
+         * 返回预估的下一步的坐标及输赢结果
+         */
+        function bestChoice(pattern, color) {
+            let p;
+            if (p = willWin(pattern, color)) {
+                return {
+                    point: p,
+                    result: 1 // 1表示要赢，0表示和棋
+                }
+            }
+            let result = -2
+            let point = null
+            for (let i = 0; i < pattern.length; i++) {
+                for (let j = 0; j < pattern.length; j++) {
+                    if (pattern[i][j]) { // 单元格已经存在棋子
+                        continue
+                    }
+                    let tmp = clone(pattern)
+                    tmp[i][j] = color
+                    let r = bestChoice(tmp, 3 - color).result
+                    if (-r > result) {
+                        result = -r
+                        point = [i, j]
+                    }
+                }
+            }
+            return {
+                point,
+                result: point ? result : 0
+            }
+        }
+        /**
+         * 拷贝数据
+         */
+        function clone(data) {
+            return JSON.parse(JSON.stringify(data))
+        }
+        /**
+         * 判断胜负
+         */
+        function check(pattern, color) {
+            /**
+             * 校验九宫格三横是否通过
+             */
+            for (let i = 0; i < pattern.length; i++) {
+                let win = true
+                for (let j = 0; j < pattern[i].length; j++) {
+                    if (pattern[i][j] !== color) {
+                        win = false
+                    }
+                }
+                if (win) {
+                    return true
+                }
+            }
+            /**
+             * 校验九宫格三竖是否通过
+             */
+            for (let i = 0; i < pattern.length; i++) {
+                let win = true
+                for (let j = 0; j < pattern[i].length; j++) {
+                    if (pattern[j][i] !== color) {
+                        win = false
+                    }
+                }
+                if (win) {
+                    return true
+                }
+            }
+            /**
+             * 校验九宫格右斜边是否通过；【00，11，22；】
+             */
+            {
+                let win = true
+                for (let i = 0; i < pattern.length; i++) {
+                    if (pattern[i][i] !== color) {
+                        win = false
+                    }
+                }
+                if (win) {
+                    return true
+                }
+            }
+            /**
+             * 校验九宫格左斜边是否通过；【20，11，02】
+             */
+            {
+                let win = true
+                for (let j = 0; j < pattern.length; j++) {
+                    if (pattern[pattern.length - j - 1][j] !== color) {
+                        win = false
+                    }
+                }
+                if (win) {
+                    return true
+                }
+            }
+            return false
+        }
+        /*
+         * 调用创建九宫格的方法
+         */
+        show(pattern)
+        console.log(bestChoice(pattern, color))
+    </script>
+</body>
+
+</html>
