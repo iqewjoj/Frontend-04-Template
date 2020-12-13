@@ -1,23 +1,23 @@
 # 学习笔记
 
 ## 寻路算法思路-广度优先搜索：
-1、画出地图编辑器；
-2、指定起点与终点，找到一条从起点走到终点的路径；
++ 1、画出地图编辑器；
++ 2、指定起点与终点，找到一条从起点走到终点的路径；
 
 
 ## Mouse events：
-1、auxclick 为非主按钮点击提供明确的行为；
-2、click
-3、contextmenu 打开上下文菜单时被触发；
-4、dblclick 单击两次主按钮时触发；
-5、DOMActivate 当元素被激活时触发-已废弃；
-6、mousedown 按下时触发；
-7、mouseenter 移动到元素上时触发，不会冒泡；
-8、mouseleave 移出某个元素时触发，不会冒泡；
-9、mousemove 在元素上移动时触发；
-10、mouseout 使指针不再包含在这个元素或其子元素中时触发，会冒泡；
-11、mouseover 当鼠标指针位于元素上方时触发，会冒泡；
-12、mouseup 放开时触发；
++ 1、auxclick 为非主按钮点击提供明确的行为；
++ 2、click
++ 3、contextmenu 打开上下文菜单时被触发；
++ 4、dblclick 单击两次主按钮时触发；
++ 5、DOMActivate 当元素被激活时触发-已废弃；
++ 6、mousedown 按下时触发；
++ 7、mouseenter 移动到元素上时触发，不会冒泡；
++ 8、mouseleave 移出某个元素时触发，不会冒泡；
++ 9、mousemove 在元素上移动时触发；
++ 10、mouseout 使指针不再包含在这个元素或其子元素中时触发，会冒泡；
++ 11、mouseover 当鼠标指针位于元素上方时触发，会冒泡；
++ 12、mouseup 放开时触发；
 
 MouseEvent.which 非标准特性
 对应鼠标按钮的映射代码值：
